@@ -8,7 +8,7 @@ from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
 import synth
-import filter
+import msg_filter
 
 
 logging.basicConfig(level=logging.INFO,
@@ -116,7 +116,7 @@ class DimeRunner(object):
         self._dime_config["xmpp"]["pwd"] = "beer"
 
         self._dime = Dime(synthesizer=synth.Pico2Wave,
-                          msg_filter=filter.XmppMsgBadWordBlaming)
+                          msg_filter=msg_filter.XmppMsgBadWordBlaming)
         self._xmpp_proxy = MessageProxyXMPP(self._dime_config["xmpp"]["jid"],
                                             self._dime_config["xmpp"]["pwd"],
                                             self._dime.event_queue)
