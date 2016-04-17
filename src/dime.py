@@ -17,6 +17,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MessageProxyXMPP(ClientXMPP):
+
+    MAX_MESSAGE_SIZE = 256
+
     def __init__(self, jid, password, message_queue):
         super(MessageProxyXMPP, self).__init__(jid, password)
         self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
@@ -30,18 +33,23 @@ class MessageProxyXMPP(ClientXMPP):
         try:
             self.get_roster()
         except IqError as err:
-            self._logger.error('There was an error getting the roster')
+            self._logger.error('there was an error getting the roster')
             self._logger.error(err.iq['error']['condition'])
             self.disconnect()
         except IqTimeout:
-            self._logger.error('Server is taking too long to respond')
+            self._logger.error('server is taking too long to respond')
             self.disconnect()
 
     def message(self, msg):
         if msg['type'] in ('chat', 'normal'):
 
             if self._message_queue.full():
-                msg.reply("Can not synthetisize your message, too many messages pending").send()
+                msg.reply("can not synthetisize your message, too many messages pending").send()
+                return
+
+            if len(msg['body']) > self.MAX_MESSAGE_SIZE:
+                msg.reply("received message is too long (%d chars, max: %d), "
+                          "won't say anyting" % (len(msg['body']), self.MAX_MESSAGE_SIZE)).send()
                 return
 
             # FIXME: using copy here due to reuse of msg object for response
