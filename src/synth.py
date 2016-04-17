@@ -1,11 +1,11 @@
 import logging
 import os
-
+import inspect
 
 class SpeechSynthInterface(object):
 
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
 
     def say(self, text):
         self._log_error()
@@ -27,6 +27,9 @@ class Festival(SpeechSynthInterface):
         language = "english"
         command_string = 'echo "%s" | %s --tts ' \
                          '--language %s' % (text, self.BINARY_NAME, language)
+
+        self.logger.debug("fire up system command '%s' to synthesize '%s'", command_string, text)
+
         os.system(command_string)
 
     def check_system(self):

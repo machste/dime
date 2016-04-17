@@ -7,7 +7,8 @@ import queue
 import synth
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)-12s %(levelname)-8s %(name)-16s %(message)s')
 LOGGER = logging.getLogger(__name__)
 
 
@@ -33,7 +34,7 @@ class Dime(StoppableThread):
 
     def __init__(self, max_event_queue_size=4):
         super(Dime, self).__init__()
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
         self._event_queue = queue.Queue(maxsize=max_event_queue_size)
         self._speech_synth = synth.SpeechSynth(synthesizer=synth.Festival)
 
