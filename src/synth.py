@@ -3,7 +3,6 @@ import os
 import inspect
 
 class SpeechSynthInterface(object):
-
     def __init__(self):
         self.logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
 
@@ -33,6 +32,7 @@ class Festival(SpeechSynthInterface):
         os.system(command_string)
 
     def check_system(self):
+        self.logger.debug("check for binary '%s' on system", Festival.BINARY_NAME)
         command_string = "which %s" % Festival.BINARY_NAME
         ret = os.system(command_string)
         if ret == 0:
@@ -47,7 +47,7 @@ class SpeechSynth(SpeechSynthInterface):
         super(SpeechSynth, self).__init__()
         self._synthesizer = synthesizer()
         self.logger.debug("configure '%s' as "
-                          "synthesizer" % self._synthesizer.__class__.__name__)
+                          "synthesizer", self._synthesizer.__class__.__name__)
 
     def __repr__(self):
         return "SpeechSynth (%s)" % self._synthesizer.__class__.__name__
