@@ -4,6 +4,8 @@ import time
 import threading
 import queue
 import copy
+import json
+import argparse
 from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
@@ -114,17 +116,15 @@ class Dime(StoppableThread):
 
 class DimeRunner(object):
 
-    def __init__(self):
+    def __init__(self, cfg):
         self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
 
-        # compose configuration
-        self._dime_config = dict()
-        self._dime_config["xmpp"] = dict()
-        self._dime_config["xmpp"]["jid"] = "sally@10.0.30.10"
-        self._dime_config["xmpp"]["pwd"] = "beer"
+        self._dime_config = cfg
+        synthesizer = eval(cfg["system"]["synthesizer"])
+        msg_f = eval(cfg["system"]["msg_filter"])
 
-        self._dime = Dime(synthesizer=synth.Pico2Wave,
-                          xmpp_msg_filter=msg_filter.XmppMsgBadWordBlaming)
+        self._dime = Dime(synthesizer=synthesizer,
+                          xmpp_msg_filter=msg_f)
         self._xmpp_proxy = MessageProxyXMPP(self._dime_config["xmpp"]["jid"],
                                             self._dime_config["xmpp"]["pwd"],
                                             self._dime.event_queue)
@@ -163,10 +163,21 @@ class DimeRunner(object):
 
 
 if __name__ == "__main__":
-
     LOGGER.info("starting application")
-    DIME_RUNNER = DimeRunner()
 
+    PARSER = argparse.ArgumentParser(description='start dime application')
+    PARSER.add_argument('--config', help='define a JSON config file')
+    ARGS = PARSER.parse_args()
+
+    if not ARGS.config:
+        PARSER.print_help()
+        sys.exit(1)
+
+    CFG = None
+    with open(ARGS.config, 'r') as cfg_file:
+        CFG = json.load(cfg_file)
+
+    DIME_RUNNER = DimeRunner(CFG)
     try:
         DIME_RUNNER.start()
     except Exception as exception:
