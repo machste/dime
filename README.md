@@ -1,14 +1,11 @@
-# dime - say it to me
-
+# dime - say it to me!
 
 ## how to run
 ```
 root@voyage:~/share# ./runner.sh
 ```
 
-
 ## demo system
-
 
 ### hardware
 pc engines alix3d3
@@ -20,6 +17,8 @@ voyage linux
 additional packages (and dependencies):
  * python3
  * python-pip3
+ * alsa-utils
+
  * festival
  * festival-czech
  * festlex-cmu
@@ -30,7 +29,13 @@ additional packages (and dependencies):
  * festvox-kallpc16k
  * festvox-kdlpc16k
  * festvox-rablpc16k
- * alsa-utils
+
+ * espeak
+
+ * pico2wave
+
+python packages from pip:
+ * SleekXMPP
 
 ### alsa mixer configuration
 to support multiple audio sources, enable the alse mixer plugin.
@@ -69,19 +74,22 @@ ctl.mixer0 {
 ```
 
 ## synthesizer tested
+
 ### festival
  * https://wiki.archlinux.org/index.php/Festival
+
+### espeak
+ * http://espeak.sourceforge.net/docindex.html
+
+### pico2wave
+ * http://manpages.ubuntu.com/manpages/xenial/en/man1/pico2wave.1.html
 
 ## links
 
 
-On Thu, Apr 14, 2016 at 9:23 AM, Samuel Casa <samuelcasa9@gmail.com> wrote:
-
     http://stackoverflow.com/questions/1614059/how-to-make-python-speak
 
 
-
-    On Thu, Apr 14, 2016 at 8:48 AM, Samuel Casa <samuel.casa@neratec.com> wrote:
 
         read this
 
@@ -89,7 +97,7 @@ On Thu, Apr 14, 2016 at 9:23 AM, Samuel Casa <samuelcasa9@gmail.com> wrote:
 
         http://askubuntu.com/questions/53896/natural-sounding-text-to-speech
 
-           freetts
+        freetts
 
         festival
         Review: Text to speech on linux

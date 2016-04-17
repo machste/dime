@@ -8,6 +8,7 @@ from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
 import synth
+import filter
 
 
 logging.basicConfig(level=logging.INFO,
@@ -72,12 +73,12 @@ class StoppableThread(threading.Thread):
 
 class Dime(StoppableThread):
 
-    def __init__(self, max_event_queue_size=4):
+    def __init__(self, synthesizer, msg_filter, event_queue_size=4):
         super(Dime, self).__init__()
         self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
-        self._event_queue = queue.Queue(maxsize=max_event_queue_size)
-        self._speech_synth = synth.SpeechSynth(synthesizer=synth.Pico2Wave)
-        self._xmpp_mp = XmppMessageProcessor()
+        self._event_queue = queue.Queue(maxsize=event_queue_size)
+        self._speech_synth = synth.SpeechSynth(synthesizer=synthesizer)
+        self._xmpp_msg_filter = msg_filter()
 
     @property
     def event_queue(self):
@@ -95,26 +96,12 @@ class Dime(StoppableThread):
                 self._logger.debug("timeout on empty queue, continue")
                 continue
 
-            text_to_say = self._xmpp_mp.get_text(queue_element)
+            text_to_say = self._xmpp_msg_filter.get_text(queue_element)
             if not self._speech_synth.say(text_to_say):
                 self._logger.error("could not say '%s' using synthesizer"
                                    " '%s'!", text_to_say, self._speech_synth)
 
         self._logger.info("exit gracefully")
-
-
-class XmppMessageProcessor(object):
-    def __init__(self):
-        self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
-
-    def get_text(self, msg):
-        text = msg["body"]
-        if "fuck" in msg["body"]:
-
-            self._logger.fatal(msg['from'])
-
-            text = "%s wanted me to say bad words!" % msg['from']
-        return text
 
 
 class DimeRunner(object):
@@ -128,7 +115,8 @@ class DimeRunner(object):
         self._dime_config["xmpp"]["jid"] = "sally@10.0.30.10"
         self._dime_config["xmpp"]["pwd"] = "beer"
 
-        self._dime = Dime()
+        self._dime = Dime(synthesizer=synth.Pico2Wave,
+                          msg_filter=filter.XmppMsgBadWordBlaming)
         self._xmpp_proxy = MessageProxyXMPP(self._dime_config["xmpp"]["jid"],
                                             self._dime_config["xmpp"]["pwd"],
                                             self._dime.event_queue)
@@ -140,20 +128,8 @@ class DimeRunner(object):
     def start(self):
         if not self._dime.check_system():
             raise Exception("dime system not ready, exit immediately")
-
         self._dime.start()
         self._xmpp_proxy.connect()
-
-        #         self._logger.fatal(self._xmpp.credentials)
-        #
-        # self._logger.fatal(self._xmpp.state)
-        #
-        # self._logger.fatal(ret)
-        #
-        # if not ret :
-        #     self._logger.error("unable to connect jabber id '%s'", self._jabber_id)
-        #     return
-
         self._xmpp_proxy.process(block=False)
 
     def stop(self):
