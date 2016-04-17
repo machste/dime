@@ -47,7 +47,7 @@ class MessageProxyXMPP(ClientXMPP):
             msg_cpy = copy.copy(msg)
             self._message_queue.put(msg_cpy)
 
-            msg.reply("thanks for sending message '%s', message enqueued for synthesis... "
+            msg.reply("received message '%s' - enqueued to synthesize... "
                       "(queue fill level: %d / %d)" % (msg['body'].strip(),
                                                        self._message_queue.qsize(),
                                                        self._message_queue.maxsize)).send()
@@ -76,7 +76,7 @@ class Dime(StoppableThread):
         super(Dime, self).__init__()
         self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
         self._event_queue = queue.Queue(maxsize=max_event_queue_size)
-        self._speech_synth = synth.SpeechSynth(synthesizer=synth.Festival)
+        self._speech_synth = synth.SpeechSynth(synthesizer=synth.Pico2Wave)
         self._xmpp_mp = XmppMessageProcessor()
 
     @property
@@ -96,7 +96,9 @@ class Dime(StoppableThread):
                 continue
 
             text_to_say = self._xmpp_mp.get_text(queue_element)
-            self._speech_synth.say(text_to_say)
+            if not self._speech_synth.say(text_to_say):
+                self._logger.error("could not say '%s' using synthesizer"
+                                   " '%s'!", text_to_say, self._speech_synth)
 
         self._logger.info("exit gracefully")
 
