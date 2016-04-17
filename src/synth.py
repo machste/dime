@@ -27,7 +27,9 @@ class SpeechSynthInterface(object):
 
     def system_call(self, command):
         self.logger.debug("fire up system call '%s'", command)
-        return os.system(command)
+
+        ascii_command = str(command.encode('utf-8').decode('ascii', 'ignore'))
+        return os.system(ascii_command)
 
 
 class Festival(SpeechSynthInterface):
