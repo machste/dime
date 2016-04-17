@@ -1,4 +1,5 @@
 import logging
+import random
 
 
 class XmppMsgPassthrough(object):
@@ -44,14 +45,14 @@ class XmppMsgBadWordReplacer(XmppMsgBadWordRefuser):
     def _get_text(self, msg):
         text = msg["body"]
         bad_words_found = set([word for word in self._seven_dirty_words if word in text])
-        clean_text = []
+        text = []
         # remove all words which contain something from the 'bad word list'
         for word in text.split(' '):
             for bad_word in bad_words_found:
                 if bad_word in word:
                     word = " 'bad word!' "
-            clean_text.append(word)
-        clean_text = " ".join(clean_text)
+            text.append(word)
+        clean_text = " ".join(text)
 
         return clean_text
 
@@ -76,11 +77,14 @@ class XmppMsgBadWordBlaming(XmppMsgBadWordRefuser):
 
             bad_word_string = self._get_text_enumeration(bad_words_found)
             user = repr(msg['from']).split('@')[0]
-            text = "oh no! %s wanted me to say %s %s, i can not believe that! such a naughty guy!" % (user, multiple, bad_word_string)
+
+            extra = "such a naughty guy!" if bool(random.getrandbits(1)) else "i can not believe that!"
+            text = "oh no! %s wanted me to say %s %s, %s" % (user, multiple, bad_word_string, extra)
 
         return text
 
-    def _get_text_enumeration(self, word_list):
+    @staticmethod
+    def _get_text_enumeration(word_list):
         if len(word_list) == 1:
             return word_list[0]
 

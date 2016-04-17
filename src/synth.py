@@ -71,7 +71,9 @@ class Pico2Wave(SpeechSynthInterface):
     def say(self, text):
         languages = ('en-US', 'en-GB', 'de-DE', 'es-ES', 'fr-FR', 'it-IT')
         lang = languages[0]
-        tmp_file_name = tempfile.NamedTemporaryFile(prefix="pico_2_wave_", suffix=".wav", delete=False).name
+        tmp_file_name = tempfile.NamedTemporaryFile(prefix="pico_2_wave_",
+                                                    suffix=".wav",
+                                                    delete=False).name
         command_string = '%s --lang %s --wave %s "%s" ; aplay %s' % (self.BINARY_NAME,
                                                                      lang,
                                                                      tmp_file_name,

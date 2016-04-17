@@ -73,12 +73,12 @@ class StoppableThread(threading.Thread):
 
 class Dime(StoppableThread):
 
-    def __init__(self, synthesizer, msg_filter, event_queue_size=4):
+    def __init__(self, synthesizer, xmpp_msg_filter, event_queue_size=4):
         super(Dime, self).__init__()
         self._logger = logging.getLogger(self.__module__ + "." + self.__class__.__name__)
         self._event_queue = queue.Queue(maxsize=event_queue_size)
         self._speech_synth = synth.SpeechSynth(synthesizer=synthesizer)
-        self._xmpp_msg_filter = msg_filter()
+        self._xmpp_msg_filter = xmpp_msg_filter()
 
     @property
     def event_queue(self):
@@ -116,7 +116,7 @@ class DimeRunner(object):
         self._dime_config["xmpp"]["pwd"] = "beer"
 
         self._dime = Dime(synthesizer=synth.Pico2Wave,
-                          msg_filter=msg_filter.XmppMsgBadWordBlaming)
+                          xmpp_msg_filter=msg_filter.XmppMsgBadWordBlaming)
         self._xmpp_proxy = MessageProxyXMPP(self._dime_config["xmpp"]["jid"],
                                             self._dime_config["xmpp"]["pwd"],
                                             self._dime.event_queue)
